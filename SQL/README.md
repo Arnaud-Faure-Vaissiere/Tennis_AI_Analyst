@@ -58,7 +58,7 @@ Tournament attributes and player identifiers should be checked for consistency, 
 
 ## MCP extension
 
-The Match Charting Project (MCP) is an additional experimental source used to investigate player-style features. Its tables and import scripts are kept separately under `sql/mcp/` because MCP is not required to create the core ATP database or run V1.
+The Match Charting Project (MCP) is an additional experimental source used to investigate player-style features. Its tables and import scripts are kept separately under `SQL/mcp/` because MCP is not required to create the core ATP database or run V1.
 
 ## Reproducibility
 
