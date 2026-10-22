@@ -94,12 +94,12 @@ WHERE
     AND m.player = r.player;
 
 -- Rajout de Rally
---ALTER TABLE mcp_match_player_stats
---ADD COLUMN rally_pts INTEGER,
---ADD COLUMN rally_pts_won INTEGER,
---ADD COLUMN rally_winners INTEGER,
---ADD COLUMN rally_forced INTEGER,
---ADD COLUMN rally_unforced INTEGER;
+ALTER TABLE mcp_match_player_stats
+ADD COLUMN rally_pts INTEGER,
+ADD COLUMN rally_pts_won INTEGER,
+ADD COLUMN rally_winners INTEGER,
+ADD COLUMN rally_forced INTEGER,
+ADD COLUMN rally_unforced INTEGER;
 
 WITH rally_player_stats AS (
 
