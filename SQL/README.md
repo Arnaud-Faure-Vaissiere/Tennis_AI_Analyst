@@ -15,7 +15,7 @@ The data originates from Jeff Sackmann's ATP tennis datasets:
 - ATP match results: `atp_matches_YYYY.csv`
 - Player reference data: `atp_players.csv`
 
-Original project: https://github.com/JeffSackmann/tennis_atp
+Original project: https://github.com/Aneeshers/tennis-sackmann-archive/tree/main/atp
 
 Please consult the source repository and its applicable licence before redistributing data or using it commercially. Raw CSV files are not stored in this repository.
 
