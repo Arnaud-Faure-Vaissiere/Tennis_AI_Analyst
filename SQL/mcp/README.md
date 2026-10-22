@@ -32,18 +32,6 @@ The metadata file describes charted matches, while the statistics files provide 
 
 The MCP dataset is not a complete census of all ATP matches. It contains matches that have been charted and submitted by contributors, so coverage varies across players and periods.
 
-## Source attribution and licence
-
-The original dataset is maintained by Jeff Sackmann and the Match Charting Project contributors.
-
-The repository identifies the data as licensed under the Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International licence (CC BY-NC-SA 4.0).
-
-Source and licence information:
-
-https://github.com/JeffSackmann/tennis_MatchChartingProject
-
-Raw MCP CSV files are not required to be committed to this project repository. Users should obtain them from the source and review the applicable licence before redistribution or commercial use.
-
 ## Database design
 
 The MCP SQL pipeline separates imported source data from structured match metadata and consolidated player statistics.
