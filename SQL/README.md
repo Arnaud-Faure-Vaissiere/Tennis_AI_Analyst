@@ -1,4 +1,4 @@
-# SQL — ATP Database
+# SQL : ATP Database
 
 ## Overview
 
@@ -6,7 +6,7 @@ This directory contains the SQL scripts used to create and populate the PostgreS
 
 The ATP database is the core data source for the first prediction model (V1). It stores player information, tournament metadata, match results, rankings, and available match statistics.
 
-The current dataset covers ATP men's singles matches from **2010 to 2026**, based on the imported yearly CSV files. The 2026 season is a partial-year snapshot; record the date on which the source files were downloaded.
+The current dataset covers ATP men's singles matches from **2010 to 2026**, based on the imported yearly CSV files. 
 
 ## Data source
 
