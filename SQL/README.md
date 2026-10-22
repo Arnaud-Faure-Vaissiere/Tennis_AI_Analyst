@@ -46,10 +46,6 @@ Run the scripts in the following order.
 4. `02_insert_players.sql` transforms and inserts player records into `players`.
 5. `03_insert_matches.sql` inserts tournament metadata into `tournaments`, then transforms and inserts match records into `matches`.
 
-**Important:** the staging tables must be populated before running the corresponding insertion scripts. The scripts do not download CSV files automatically.
-
-The schema-creation script should not normally delete existing data. Any destructive reset script is intended for a local development database only and must be reviewed before execution.
-
 ## Data quality and modelling considerations
 
 The database is a historical source, not a pre-match feature table. Match outcomes and match statistics are observed after each match has finished.
