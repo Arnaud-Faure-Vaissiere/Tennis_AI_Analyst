@@ -23,7 +23,7 @@ V1 is the main predictive baseline of the project. The Match Charting Project (M
 
 The project uses historical ATP match results and player reference data from Jeff Sackmann's tennis datasets:
 
-- ATP match data: https://github.com/JeffSackmann/tennis_atp
+- ATP match data:  https://github.com/Aneeshers/tennis-sackmann-archive/tree/main/atp
 - Player reference data: `atp_players.csv`
 
 The selected match dataset covers the period 2010–2026, with 2026 representing a partial season snapshot.
