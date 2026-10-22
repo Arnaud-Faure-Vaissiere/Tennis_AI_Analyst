@@ -1,4 +1,4 @@
-# Match Charting Project (MCP) — SQL Pipeline
+# Match Charting Project (MCP) : SQL Pipeline
 
 ## Overview
 
