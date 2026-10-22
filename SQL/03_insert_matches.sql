@@ -83,7 +83,7 @@ SELECT
 FROM matches_import
 
 WHERE tourney_id IS NOT NULL
-  AND tourney_id <> ''
+  AND tourney_id <> '';
 
 
 ON CONFLICT (tournament_id, match_num)
