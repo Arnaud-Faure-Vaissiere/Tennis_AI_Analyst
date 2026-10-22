@@ -113,8 +113,6 @@ The rates are calculated from accumulated numerators and denominators rather tha
 
 These features are useful because serve quality, consistency, and the ability to win points behind the first and second serve can strongly affect tennis match outcomes.
 
-**Limitation:** the current implementation replaces some missing raw service counts with zero during historical accumulation. This should be reviewed before production use so that unavailable statistics are not mistaken for genuine zero counts.
-
 ### 4.6. Historical win rates — `create_win_rate_features(df)`
 
 Computes the overall historical win rate and the win rate on the current surface.
