@@ -96,8 +96,6 @@ Computes:
 
 These features represent workload and recovery opportunities. A player who has played several long matches may approach the next round under different conditions from an opponent who has played less.
 
-The current implementation updates tournament minutes as it processes match rows. This requires further auditing to ensure that minutes from an earlier match on the same date cannot enter another match's pre-match features.
-
 ### 4.5. Service performance — `create_service_features(df)`
 
 Builds six historical service metrics:
