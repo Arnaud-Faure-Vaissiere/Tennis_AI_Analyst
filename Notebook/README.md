@@ -34,7 +34,7 @@ PostgreSQL is used to store and structure the data before analysis in Python. Th
 - `tournaments`: tournament metadata, including surface and tournament level.
 - `matches`: historical match results, rankings, scores, durations, and available match statistics.
 
-The SQL schema, imports, constraints, and database preparation are documented in [`sql/README.md`](../sql/README.md).
+The SQL schema, imports, constraints, and database preparation are documented in [`SQL/README.md`](../SQL/README.md).
 
 ## 3. Exploratory data analysis and cleaning
 
