@@ -17,8 +17,6 @@ The data originates from Jeff Sackmann's ATP tennis datasets:
 
 Original project: https://github.com/Aneeshers/tennis-sackmann-archive/tree/main/atp
 
-Please consult the source repository and its applicable licence before redistributing data or using it commercially. Raw CSV files are not stored in this repository.
-
 ## Database design
 
 The database separates raw imported files from structured relational tables.
