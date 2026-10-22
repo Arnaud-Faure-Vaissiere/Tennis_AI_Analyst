@@ -174,8 +174,7 @@ CREATE TABLE matches (
     loser_rank INTEGER,
     loser_rank_points INTEGER,
 
--- ========================================================
--- PROTECTION CONTRE LES DOUBLONSUn match est identifié par :
+-- PROTECTION CONTRE LES DOUBLONS
 CONSTRAINT unique_match
 UNIQUE (tournament_id, match_num));
 
@@ -214,5 +213,3 @@ ON matches(tournament_id);
 
 CREATE INDEX idx_matches_date
 ON matches(tournament_date);
-
--- FIN
