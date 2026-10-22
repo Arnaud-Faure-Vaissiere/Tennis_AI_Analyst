@@ -92,18 +92,6 @@ The SQL scripts remove duplicate rows using PostgreSQL's physical tuple identifi
 
 This operation is intended to remove redundant copies of the same logical record, not to reconcile conflicting statistics. Duplicate keys should be inspected before deletion to confirm that their aggregate values agree. If conflicting values exist, they must be investigated rather than arbitrarily discarded.
 
-## Why use the `Total` rows?
-
-The aggregate files may contain totals and breakdowns for different subsets of a match.
-
-The consolidation script uses rows where `row = 'Total'` to obtain match-level aggregate statistics. This avoids treating totals and their sub-breakdowns as independent observations or accidentally counting the same match statistics multiple times.
-
-For the rally file, the server-side and returner-side statistics are transformed into separate player-level records:
-
-- `PL1` represents the server.
-- `PL2` represents the returner.
-
-The resulting rows are merged into `mcp_match_player_stats` using the match identifier and player name.
 
 ## SQL execution workflow
 
@@ -117,8 +105,6 @@ Run the scripts in the following logical order:
 6. `05_build_mcp_match_player_stats.sql` — consolidate the aggregate statistics into player-match records.
 
 The exact execution order must respect table dependencies. The main ATP `players` table must already exist before the player-mapping step. Player identifier columns and rally-statistic columns must be created before scripts that populate them.
-
-**Important:** any script containing `DROP TABLE`, `TRUNCATE`, or destructive reset statements can remove existing data. Such scripts should only be run intentionally in a development environment or after a verified backup.
 
 ## Missing data and data quality
 
@@ -135,11 +121,3 @@ Ratio features must be built from compatible numerators and denominators. For ex
 MCP-derived profiles were constructed from charted matches strictly earlier than the ATP match being predicted. When exact match times are unavailable, same-day MCP matches are excluded to reduce the risk of temporal leakage.
 
 MCP was tested as an extension to the baseline model through alternative historical and surface-specific player profiles. The current evidence does not establish a clear predictive advantage over V1, so MCP is retained for further analysis of playing styles rather than treated as a required dependency of the main model.
-
-The clustering experiments are exploratory. Cluster labels should only be assigned from profiles available at the relevant prediction date, using standardization and cluster centres fitted on training-period data.
-
-## Reproducibility
-
-Record the download date, source repository version or commit, imported filenames, duplicate-resolution decisions, player-mapping decisions, and relevant SQL execution steps.
-
-Do not commit database credentials, `.env` files, or large raw CSV files. Keep the SQL scripts and documentation sufficient for another user to reproduce the database preparation from the original data sources.
