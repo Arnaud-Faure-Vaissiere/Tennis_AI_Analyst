@@ -378,19 +378,11 @@ The resulting rates are computed from aggregated numerators and denominators, ra
 
 The first version, **V2**, adds the complete set of MCP-derived historical profiles to the V1 feature-engineering workflow.
 
-Twenty-two rate metrics are computed over three windows, separately for the historical winner and loser:
-
-\[
-22 \times 3 \times 2 = 132
-\]
+Twenty-two rate metrics are computed over three windows, separately for the historical winner and loser.
 
 This produces **132 additional player-profile columns** at the historical match-data stage.
 
 When each match is converted into the A/B matchup representation, the winner and loser profiles are reassigned to player A and player B according to the randomized matchup construction. Differences between the two players are then calculated, producing up to 198 MCP-derived matchup features:
-
-\[
-22 \times 3 \times 3 = 198
-\]
 
 The three representations are:
 
@@ -421,17 +413,9 @@ V2a retains the two five-year profile windows:
 
 It removes the `recent_10` window, while retaining the 22 original rate metrics for this experiment.
 
-The number of MCP player-profile columns is reduced from 132 to 88:
-
-\[
-22 \times 2 \times 2 = 88
-\]
+The number of MCP player-profile columns is reduced from 132 to 88.
 
 Following the A/B matchup construction and calculation of player differences, this corresponds to up to 132 matchup-level MCP features:
-
-\[
-22 \times 2 \times 3 = 132
-\]
 
 The motivation is to focus on more stable historical profiles and avoid relying on a recent window that may contain only a small number of charted matches.
 
