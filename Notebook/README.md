@@ -301,8 +301,8 @@ The best XGBoost configuration was evaluated on the validation set during model 
 | Evaluation | Accuracy |
 |---|---:|
 | Best temporal cross-validation score | 68.3902% |
-| Validation accuracy | 66.4522% |
-| Final reported test accuracy | 65.8516% |
+| Validation accuracy | 66.0875% |
+| Final reported test accuracy | 65.5513% |
 
 The test accuracy is the proportion of held-out matches for which the predicted winner matches the observed result.
 
