@@ -288,20 +288,8 @@ The final search evaluated 200 candidate configurations over four chronological 
 The best configuration was:
 
 ```python
-XGBClassifier(
-    random_state=0,
-    eval_metric="logloss",
-    n_jobs=1,
-    tree_method="hist",
-    colsample_bytree=0.9702386553170644,
-    gamma=0.14207211639577388,
-    learning_rate=0.006895350858996432,
-    max_depth=5,
-    min_child_weight=1,
-    n_estimators=955,
-    reg_lambda=23.49575409856029,
-    subsample=0.7421052341237935
-)
+XGBClassifier(random_state=0, eval_metric="logloss", n_jobs=1, tree_method="hist", colsample_bytree=0.9702386553170644, gamma=0.14207211639577388,
+learning_rate=0.006895350858996432, max_depth=5, min_child_weight=1, n_estimators=955, reg_lambda=23.49575409856029,subsample=0.7421052341237935)
 ```
 
 The estimator is used inside a pipeline containing the preprocessing steps, so imputation and scaling are fitted separately within each cross-validation training fold.
@@ -322,15 +310,175 @@ The test score is close to the validation score, although below the cross-valida
 
 The test set was consulted during earlier iterative model comparisons, including MCP experiments. It should therefore not be considered a completely untouched final holdout, and the small observed performance differences between versions should not be interpreted as definitive statistical evidence.
 
-## 12. Limitations and next steps
+## 12. V2 — Match Charting Project (MCP) Extension
 
-V1 establishes a reproducible baseline for ATP match prediction, but several improvements remain:
+### 12.1. Motivation and data source
 
-- Audit all feature calculations for strict pre-match temporal integrity, particularly same-day tournament-minute updates.
-- Improve missing-statistic handling in service features.
-- Persist the trained pipeline together with its parameters, data cutoff, and software dependencies.
-- Create a prediction function that reproduces the same feature engineering for a future match.
-- Add automated tests for data quality, feature generation, and leakage prevention.
-- Investigate MCP-derived player-style features as a separate experimental extension. The current MCP experiments have not demonstrated a clear improvement over V1.
+V1 relies on conventional ATP match data, including rankings, Elo ratings, recent form, service statistics, workload, and previous match results.
 
-The next stage is to turn the notebook-based workflow into reusable Python modules and an automated prediction pipeline, while keeping the notebooks as documentation of the experiments and methodology.
+However, these variables provide only a partial description of how a player actually plays. Two players with similar rankings and Elo ratings may have different playing styles: one may rely heavily on powerful serves and short points, while another may be more effective in longer rallies or use different shot directions.
+
+To investigate whether this additional tactical information could improve match prediction, an experimental extension was developed using the **Match Charting Project (MCP)**.
+
+Source repository: https://github.com/JeffSackmann/tennis_MatchChartingProject
+
+Unlike the conventional ATP match files, MCP contains detailed records of charted matches, including serving patterns, shot directions, shot types, return depth, and rally statistics. These additional observations can be used to construct historical player profiles.
+
+The MCP dataset covers only matches that have been charted and submitted. It is therefore much less complete than the main ATP dataset, and coverage varies across players and periods.
+
+### 12.2. Importing and consolidating MCP statistics
+
+Seven source files were used:
+
+- `charting-m-matches.csv`: match metadata, player names, dates, tournaments, rounds, and surfaces.
+- `charting-m-stats-ServeBasics.csv`: service points, aces, unreturned serves, forced errors, and points won within three shots.
+- `charting-m-stats-ServeDirection.csv`: serve directions and service errors.
+- `charting-m-stats-ShotDirection.csv`: shot directions, including crosscourt, down the line, inside-out, and inside-in.
+- `charting-m-stats-ShotTypes.csv`: winners, induced forced errors, unforced errors, and other shot statistics.
+- `charting-m-stats-ReturnDepth.csv`: returnable balls, return depth, and return errors.
+- `charting-m-stats-Rally.csv`: rally outcomes, distinguishing the server from the returner.
+
+The CSV files were imported into PostgreSQL staging tables. The data was then cleaned, deduplicated, mapped to the canonical ATP player identifiers where possible, and consolidated into a player-match statistics table.
+
+The consolidation creates a common representation of the observed statistics for each player in each charted match. This structure makes it possible to aggregate historical MCP records and calculate player-level features in Python.
+
+### 12.3. Constructing MCP-derived features
+
+Raw MCP statistics are not directly used as predictors of the match in which they were recorded. Instead, they are used to construct historical profiles that can be associated with later ATP matches.
+
+The derived features describe several aspects of a player's game:
+
+| Feature category | Examples | Why it may matter |
+|---|---|---|
+| Service effectiveness | Service-points-won rate, ace rate | Measures service effectiveness and ability to win points directly. |
+| Short-point tendency | Unreturned serve rate, quick-points rate | Describes the tendency to produce short points. |
+| Serve direction | Wide, T, and body serve rates | Captures serving patterns and tactical choices. |
+| Shot outcomes | Winner rate, induced forced-error rate, unforced-error rate | Describes attacking effectiveness and risk-taking. |
+| Shot direction | Crosscourt, down-the-line, inside-out, inside-in, and down-middle rates | Captures shot-selection tendencies. |
+| Return depth | Deep, very deep, and shallow return rates | Describes how players position their returns. |
+| Rally characteristics | Rally win rate, rally winner rate, forced-error rate, and unforced-error rate | Provides information about performance and outcomes during rallies. |
+
+These variables could complement V1 by providing more detailed tactical information than conventional match statistics.
+
+#### Historical profiling windows
+
+For each player and target ATP match, the MCP features are calculated over three historical windows:
+
+- **`global_5y`**: charted matches from the preceding five years, across all surfaces.
+- **`surface_5y`**: charted matches from the preceding five years on the surface of the target match.
+- **`recent_10`**: the player's ten most recent eligible charted matches, irrespective of surface.
+
+The global profile describes the player's general tendencies, while the surface-specific profile captures differences associated with the playing surface. The recent profile aims to capture more recent changes in performance or playing style.
+
+Only MCP matches dated strictly before the target ATP match are eligible. When exact match times are unavailable, matches from the same day are excluded to reduce the risk of temporal leakage.
+
+The resulting rates are computed from aggregated numerators and denominators, rather than by taking a simple average of match-level percentages. This avoids giving every charted match equal weight regardless of the number of relevant observations it contains.
+
+### 12.4. V2: adding the full set of MCP profiles
+
+The first version, **V2**, adds the complete set of MCP-derived historical profiles to the V1 feature-engineering workflow.
+
+Twenty-two rate metrics are computed over three windows, separately for the historical winner and loser:
+
+\[
+22 \times 3 \times 2 = 132
+\]
+
+This produces **132 additional player-profile columns** at the historical match-data stage.
+
+When each match is converted into the A/B matchup representation, the winner and loser profiles are reassigned to player A and player B according to the randomized matchup construction. Differences between the two players are then calculated, producing up to 198 MCP-derived matchup features:
+
+\[
+22 \times 3 \times 3 = 198
+\]
+
+The three representations are:
+
+- The feature value for player A.
+- The feature value for player B.
+- The difference between A and B.
+
+This allows the model to use both individual player characteristics and relative differences in playing style.
+
+The MCP features are added to the existing V1 predictors; they do not replace the original ranking, Elo, form, fatigue, service, win-rate, or experience features.
+
+#### Missing data and quality checks
+
+Because MCP includes only charted matches, many ATP players have incomplete or unavailable historical profiles. Missing values are retained and handled by the model's preprocessing pipeline, which learns numerical imputation values from the training data.
+
+Quality checks also identified some `deep_return_rate` values greater than 1. Since this metric is intended to represent a rate, those values indicate that the source counts, denominator definition, or aggregation require further investigation.
+
+The original MCP experiment retained this metric, so the results should be interpreted as exploratory. The anomaly should be resolved before relying on the affected return-depth features in a production prediction pipeline.
+
+### 12.5. V2a: simplified MCP representation
+
+A second variant, **V2a**, was tested to investigate whether a simpler representation could be more useful than the complete set of MCP features.
+
+V2a retains the two five-year profile windows:
+
+- `global_5y`
+- `surface_5y`
+
+It removes the `recent_10` window, while retaining the 22 original rate metrics for this experiment.
+
+The number of MCP player-profile columns is reduced from 132 to 88:
+
+\[
+22 \times 2 \times 2 = 88
+\]
+
+Following the A/B matchup construction and calculation of player differences, this corresponds to up to 132 matchup-level MCP features:
+
+\[
+22 \times 2 \times 3 = 132
+\]
+
+The motivation is to focus on more stable historical profiles and avoid relying on a recent window that may contain only a small number of charted matches.
+
+V2a remains an experimental representation. It does not resolve the underlying MCP coverage limitations, and it retains the original `deep_return_rate` metric that requires additional quality checks.
+
+### 12.6. Model evaluation and comparison
+
+The objective was to determine whether the MCP features provide additional predictive information beyond the V1 features.
+
+The models were evaluated using chronological data splits. Hyperparameters were first compared using the same configuration, then tuned independently using `RandomizedSearchCV` and temporal cross-validation.
+
+#### Initial comparison using the same XGBoost configuration
+
+| Model | Validation accuracy |
+|---|---:|
+| V1 — without MCP | 65.9588% |
+| V2 — full MCP profiles | 66.0124% |
+| V2a — simplified MCP profiles | 66.1304% |
+
+Under this configuration, V2a achieved the highest observed validation accuracy, but its advantage over V1 was only 0.1716 percentage points.
+
+This result motivated further experimentation rather than an immediate conclusion that MCP improved performance.
+
+#### Comparison after hyperparameter optimization
+
+Each configuration was then optimized independently. The following results were obtained:
+
+| Metric | V1 | V2a |
+|---|---:|---:|
+| Best temporal cross-validation score | 68.3902% | 68.3768% |
+| Validation accuracy | **66.4522%** | 66.2484% |
+| Final reported test accuracy | **65.8516%** | 65.7121% |
+
+The optimized V1 model performed better than V2a on both validation and test accuracy. Their cross-validation scores were almost identical, indicating that the MCP extension did not demonstrate a clear advantage in this experiment.
+
+The test set had also been examined during earlier iterative model comparisons. Consequently, the small difference between the reported test scores should not be interpreted as definitive statistical evidence that V1 is intrinsically superior.
+
+### 12.7. Conclusion: retaining MCP as an experimental extension
+
+The MCP extension provides additional information about tennis playing styles, serving patterns, shot selection, return depth, and rally outcomes. These characteristics remain potentially useful for player profiling and tactical analysis.
+
+However, the experiments did not demonstrate a consistent improvement in match prediction over the V1 baseline. MCP coverage is incomplete, and some derived statistics require further quality control.
+
+For these reasons:
+
+- **V1 remains the primary predictive model.**
+- **V2 and V2a are retained as experimental extensions** for further analysis and possible future use.
+- MCP-derived player-style features may be investigated separately from winner prediction, including for exploratory clustering and player-profile visualizations.
+
+This distinction is important: an additional dataset can be valuable for interpreting player characteristics even when it does not measurably improve the accuracy of the current predictive model.
